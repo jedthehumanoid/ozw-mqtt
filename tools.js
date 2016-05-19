@@ -33,6 +33,21 @@ function onReply (topic, message) {
   callback.apply(this, arguments);
 }
 
+function fahrenheitToCelsius (temp) {
+  temp = (temp - 32) * 5 / 9;
+  temp = temp.toFixed(2);
+  return temp;
+}
+
+function convertSI (value) {
+  if (value.label === 'Temperature' && value.units === 'F') {
+    value.value = fahrenheitToCelsius(value.value);
+  }
+  return value;
+}
+
 exports.topicMatch = topicMatch;
 exports.request = request;
 exports.onReply = onReply;
+exports.fahrenheitToCelsius = fahrenheitToCelsius;
+exports.convertSI = convertSI;
