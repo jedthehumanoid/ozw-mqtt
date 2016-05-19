@@ -3,6 +3,9 @@
 var OZW = require('openzwave-shared');
 var zwave = new OZW({ConsoleOutput: false});
 
+var mqtt = require('mqtt');
+var client = mqtt.connect('mqtt://localhost');
+
 var nodes = [];
 
 zwave.on('driver ready', function (homeid) {
@@ -10,7 +13,7 @@ zwave.on('driver ready', function (homeid) {
 });
 
 zwave.on('driver failed', function () {
-  console.log('wtf driver failed');
+  console.log('driver failed');
   zwave.disconnect();
   process.exit();
 });
@@ -20,7 +23,7 @@ zwave.on('scan complete', function () {
 });
 
 zwave.on('node added', function (nodeid) {
-  console.log('Adding node: ' + nodeid + '...\n');
+  client.publish('zwave/message', 'Adding node: ' + nodeid + '...\n');
   nodes[nodeid] = {
     manufacturer: '',
     manufacturerid: '',
@@ -36,13 +39,21 @@ zwave.on('node added', function (nodeid) {
 });
 
 zwave.on('value added', function (nodeid, comclass, value) {
-  console.log('value added');
-  console.log('-----------');
-  console.log(value.node_id);
-  console.log(value.label);
-  console.log(value.value);
-  console.log('');
+  if (value.label === 'Temperature' && value.units === 'F') {
+    value.value = (value.value - 32) * 5 / 9;
+    value.value = value.value.toFixed(2);
+  }
 
+  var message = {
+    info: 'value added',
+    node: value.node_id,
+    label: value.label,
+    value: value.value
+  };
+  console.log('added');
+  console.log(value);
+
+  client.publish('zwave/value', JSON.stringify(message));
   if (!nodes[nodeid]['classes'][comclass]) {
     nodes[nodeid]['classes'][comclass] = {};
   }
@@ -50,12 +61,21 @@ zwave.on('value added', function (nodeid, comclass, value) {
 });
 
 zwave.on('value changed', function (nodeid, comclass, value) {
-  console.log('value changed');
-  console.log('-------------');
-  console.log(value.node_id);
-  console.log(value.label);
-  console.log(value.value);
-  console.log('');
+  if (value.label === 'Temperature' && value.units === 'F') {
+    value.value = (value.value - 32) * 5 / 9;
+    value.value = value.value.toFixed(2);
+  }
+
+  var message = {
+    info: 'value changed',
+    node: value.node_id,
+    label: value.label,
+    value: value.value
+  };
+  console.log('changed');
+  console.log(value);
+
+  client.publish('zwave/value', JSON.stringify(message));
 
   if (nodes[nodeid]['ready']) {
     console.log('node%d: changed: %d:%s:%s->%s', nodeid, comclass,
@@ -101,7 +121,7 @@ zwave.on('node ready', function (nodeid, nodeinfo) {
   }
 });
 
-console.log('connecting...');
+client.publish('message', 'connecting...');
 zwave.connect('/dev/ttyACM0');
 
 process.on('SIGINT', function () {
@@ -109,5 +129,15 @@ process.on('SIGINT', function () {
   console.log(JSON.stringify(nodes, null, 2));
 
   zwave.disconnect('/dev/ttyUSB0');
+  client.end();
   process.exit();
+});
+
+client.on('connect', function () {
+  // client.subscribe('presence');
+  // client.publish('presence', 'Hello mqtt');
+});
+
+client.on('message', function (topic, message) {
+  console.log(message.toString());
 });
