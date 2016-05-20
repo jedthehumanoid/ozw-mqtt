@@ -1,3 +1,6 @@
+var fs = require('fs');
+var minimist = require('minimist');
+
 function topicMatch (topic, match) {
   topic = topic.split('/');
   match = match.split('/');
@@ -46,8 +49,32 @@ function convertSI (value) {
   return value;
 }
 
+function readConfiguration (defaultfile) {
+  var config = minimist(process.argv.slice(2), {alias: {config: 'c'}});
+
+  if (config.config !== undefined && config.config !== true && config.config !== '') {
+    try {
+      config = JSON.parse(fs.readFileSync(config.config, 'utf8'));
+    } catch (e) {
+      console.log('Error reading ' + config.config + ': ' + e);
+      process.exit();
+    }
+  } else {
+    try {
+      config = JSON.parse(fs.readFileSync(defaultfile, 'utf8'));
+    } catch (e) {
+    }
+  }
+
+  config = minimist(process.argv.slice(2), {default: config, alias: {config: 'c'}});
+  console.log('configuration:');
+  console.log(JSON.stringify(config, null, 2));
+  return config;
+}
+
 exports.topicMatch = topicMatch;
 exports.request = request;
 exports.onReply = onReply;
 exports.fahrenheitToCelsius = fahrenheitToCelsius;
 exports.convertSI = convertSI;
+exports.readConfiguration = readConfiguration;
