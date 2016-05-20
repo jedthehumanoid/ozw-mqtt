@@ -49,8 +49,11 @@ function convertSI (value) {
   return value;
 }
 
-function readConfiguration (defaultfile) {
-  var config = minimist(process.argv.slice(2), {alias: {config: 'c'}});
+function readConfiguration (defaultfile, options) {
+  if (options === undefined) {
+    options = {};
+  }
+  var config = minimist(process.argv.slice(2), options);
 
   if (config.config !== undefined && config.config !== true && config.config !== '') {
     try {
@@ -66,7 +69,9 @@ function readConfiguration (defaultfile) {
     }
   }
 
-  config = minimist(process.argv.slice(2), {default: config, alias: {config: 'c'}});
+  options.default = config;
+
+  config = minimist(process.argv.slice(2), options);
   console.log('configuration:');
   console.log(JSON.stringify(config, null, 2));
   return config;

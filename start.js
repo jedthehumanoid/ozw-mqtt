@@ -4,7 +4,7 @@ var tools = require('./tools');
 var OZW = require('openzwave-shared');
 var mqtt = require('mqtt');
 
-var config = tools.readConfiguration('config.json');
+var config = tools.readConfiguration('config.json', {alias: {config: 'c'}});
 
 var zwave = new OZW({ConsoleOutput: false});
 var client = mqtt.connect(config.broker);
