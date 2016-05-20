@@ -69,7 +69,12 @@ function readConfiguration (defaultfile, options) {
     }
   }
 
-  options.default = config;
+  for (var variable in config) {
+    if (config.hasOwnProperty(variable)) {
+      console.log(variable);
+      options.default[variable] = config[variable];
+    }
+  }
 
   config = minimist(process.argv.slice(2), options);
   console.log('configuration:');
