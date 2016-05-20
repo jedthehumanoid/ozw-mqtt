@@ -1,12 +1,10 @@
 #!/usr/bin/env node
+
 var tools = require('./tools');
 var OZW = require('openzwave-shared');
 var mqtt = require('mqtt');
 
-var config = {
-  broker: 'mqtt://localhost',
-  usbport: '/dev/ttyACM0'
-};
+var config = tools.readConfiguration('config.json');
 
 var zwave = new OZW({ConsoleOutput: false});
 var client = mqtt.connect(config.broker);
