@@ -62,13 +62,6 @@ zwave.on('value changed', function (nodeid, comclass, value) {
   };
 
   client.publish('zwave/value', JSON.stringify(message));
-
-  if (nodes[nodeid]['ready']) {
-    console.log('node%d: changed: %d:%s:%s->%s', nodeid, comclass,
-    value['label'],
-    nodes[nodeid]['classes'][comclass][value.index]['value'],
-    value['value']);
-  }
   nodes[nodeid]['classes'][comclass][value.index] = value;
 });
 
@@ -105,7 +98,7 @@ zwave.connect(config.usbport);
 
 process.on('SIGINT', function () {
   console.log('disconnecting...');
-
+  console.log(JSON.stringify(nodes, null, 2));
   zwave.disconnect(config.usbport);
   client.end();
   process.exit();
