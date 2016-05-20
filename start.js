@@ -4,7 +4,12 @@ var tools = require('./tools');
 var OZW = require('openzwave-shared');
 var mqtt = require('mqtt');
 
-var config = tools.readConfiguration('config.json', {default: {usbport: '/dev/ttyACM0', broker: 'mqtt://localhost'}, alias: {config: 'c'}});
+var defaultconfig = {
+  usbport: '/dev/ttyACM0',
+  broker: 'mqtt://localhost'
+};
+
+var config = tools.readConfiguration('config.json', {default: defaultconfig, alias: {config: 'c'}});
 
 var zwave = new OZW({ConsoleOutput: false});
 var client = mqtt.connect(config.broker);
