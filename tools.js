@@ -30,7 +30,7 @@ function request (request, message, callback) {
 function onReply (topic, message) {
   this.unsubscribe(topic);
   var callback = this.callbacks.shift();
-  callback.apply(this, arguments);
+  callback.apply(message);
 }
 
 function fahrenheitToCelsius (temp) {
