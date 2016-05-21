@@ -40,11 +40,14 @@ zwave.on('node added', function (nodeid) {
 zwave.on('value added', function (nodeid, comclass, value) {
   value = tools.convertSI(value);
 
+  var time = new Date().toISOString();
+
   var message = {
     info: 'value added',
     node: value.node_id,
     label: value.label,
-    value: value.value
+    value: value.value,
+    timestamp: time
   };
 
   client.publish('zwave/value', JSON.stringify(message));
@@ -57,11 +60,14 @@ zwave.on('value added', function (nodeid, comclass, value) {
 zwave.on('value changed', function (nodeid, comclass, value) {
   value = tools.convertSI(value);
 
+  var time = new Date().toISOString();
+
   var message = {
     info: 'value changed',
     node: value.node_id,
     label: value.label,
-    value: value.value
+    value: value.value,
+    timestamp: time
   };
 
   client.publish('zwave/value', JSON.stringify(message));
