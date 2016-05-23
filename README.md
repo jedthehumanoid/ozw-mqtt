@@ -18,6 +18,12 @@ Commandline arguments will override config file, which in turn overrides default
 
 ## Events
 
+### Driver events
+
+* 'zwave/message', 'driver ready'
+* 'zwave/message', 'driver failed'
+* 'zwave/message', 'scan complete'
+
 Events are avaliable on following topics:
 
 ### zwave/value
