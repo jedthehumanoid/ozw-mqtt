@@ -4,6 +4,7 @@ var mqtt = require('mqtt');
 var client = mqtt.connect('mqtt://localhost');
 var tools = require('./tools');
 var https = require('https');
+var apikey = 'I4EXCOV9VGR5OLF3';
 
 client.on('connect', function () {
   client.subscribe('+/message');
@@ -12,12 +13,13 @@ client.on('connect', function () {
 
 client.on('message', function (topic, message) {
   var options, path;
-  console.log(topic);
+
   if (tools.topicMatch(topic, '+/value/#')) {
+    console.log(message.toString());
     message = JSON.parse(message.toString());
-    console.log(message);
+
     if (message.label === 'Temperature') {
-      path = '/update?api_key=I4EXCOV9VGR5OLF3&field1=' + message.value;
+      path = '/update?api_key=' + apikey + '&field1=' + message.value;
       options = {
         hostname: 'api.thingspeak.com',
         path: path
@@ -27,7 +29,7 @@ client.on('message', function (topic, message) {
       }).end();
     }
     if (message.label === 'Relative Humidity') {
-      path = '/update?api_key=I4EXCOV9VGR5OLF3&field2=' + message.value;
+      path = '/update?api_key=' + apikey + '&field2=' + message.value;
       options = {
         hostname: 'api.thingspeak.com',
         path: path
