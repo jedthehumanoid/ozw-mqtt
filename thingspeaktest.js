@@ -1,17 +1,13 @@
 #!/usr/bin/env node
 
 var mqtt = require('mqtt');
-// var fs = require('fs');
 var client = mqtt.connect('mqtt://localhost');
 var tools = require('./tools');
-// var request = require('request');
 var https = require('https');
 
 client.on('connect', function () {
   client.subscribe('+/message');
   client.subscribe('+/value');
-
-  // client.publish('presence', 'Hello mqtt');
 });
 
 client.on('message', function (topic, message) {
@@ -24,26 +20,21 @@ client.on('message', function (topic, message) {
       path = '/update?api_key=I4EXCOV9VGR5OLF3&field1=' + message.value;
       options = {
         hostname: 'api.thingspeak.com',
-        path: path,
-        port: 443,
-        method: 'GET'
+        path: path
       };
-
       https.request(options, function (response) {
-        console.log('posted humidity');
+        console.log('posted temperature');
       }).end();
     }
     if (message.label === 'Relative Humidity') {
       path = '/update?api_key=I4EXCOV9VGR5OLF3&field2=' + message.value;
       options = {
         hostname: 'api.thingspeak.com',
-        path: path,
-        port: 443,
-        method: 'GET'
+        path: path
       };
 
       https.request(options, function (response) {
-        console.log('posted temperature');
+        console.log('posted humidity');
       }).end();
     }
   } else {

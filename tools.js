@@ -1,3 +1,4 @@
+var _ = require('lodash');
 var fs = require('fs');
 var minimist = require('minimist');
 
@@ -55,7 +56,7 @@ function readConfiguration (defaultfile, options) {
   }
   var config = minimist(process.argv.slice(2), options);
 
-  if (config.config !== undefined && config.config !== true && config.config !== '') {
+  if (_.isString(config.config) && !_.isEmpty(config.config)) {
     try {
       config = JSON.parse(fs.readFileSync(config.config, 'utf8'));
     } catch (e) {
@@ -69,12 +70,7 @@ function readConfiguration (defaultfile, options) {
     }
   }
 
-  for (var variable in config) {
-    if (config.hasOwnProperty(variable)) {
-      console.log(variable);
-      options.default[variable] = config[variable];
-    }
-  }
+  _.assign(options.default, config);
 
   config = minimist(process.argv.slice(2), options);
   console.log('configuration:');

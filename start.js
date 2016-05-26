@@ -107,7 +107,6 @@ zwave.connect(config.usbport);
 
 process.on('SIGINT', function () {
   console.log('disconnecting...');
-  console.log(JSON.stringify(nodes, null, 2));
   zwave.disconnect(config.usbport);
   client.end();
   process.exit();
