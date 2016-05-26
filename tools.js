@@ -1,3 +1,5 @@
+'use strict';
+
 var _ = require('lodash');
 var fs = require('fs');
 var minimist = require('minimist');
@@ -6,7 +8,7 @@ function topicMatch (topic, match) {
   topic = topic.split('/');
   match = match.split('/');
 
-  for (var i = 0; i < match.length; i++) {
+  for (let i = 0; i < match.length; i++) {
     if (match[i] === '+') {
     } else if (match[i] === '#') {
       return true;
@@ -32,8 +34,9 @@ function request (request, message, callback) {
 }
 
 function onReply (topic, message) {
-  this.unsubscribe(topic);
   var callback = this.callbacks.shift();
+
+  this.unsubscribe(topic);
   callback.apply(message);
 }
 
@@ -51,10 +54,12 @@ function convertSI (value) {
 }
 
 function readConfiguration (defaultfile, options) {
+  var config;
+
   if (options === undefined) {
     options = {};
   }
-  var config = minimist(process.argv.slice(2), options);
+  config = minimist(process.argv.slice(2), options);
 
   if (_.isString(config.config) && !_.isEmpty(config.config)) {
     try {

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+'use strict';
+
 var tools = require('./tools');
 var OZW = require('openzwave-shared');
 var mqtt = require('mqtt');
@@ -15,22 +17,27 @@ var zwave = new OZW({ConsoleOutput: false});
 var client = mqtt.connect(config.broker);
 var nodes = [];
 
+function debugMessage (message) {
+  client.publish('zwave/debug', message);
+  console.log(message);
+}
+
 zwave.on('driver ready', function (homeid) {
-  console.log('Scanning homeid: ' + homeid);
+  debugMessage('Driver ready, scanning homeid: ' + homeid);
 });
 
 zwave.on('driver failed', function () {
-  console.log('driver failed');
+  debugMessage('Driver failed');
   zwave.disconnect();
   process.exit();
 });
 
 zwave.on('scan complete', function () {
-  console.log('scan complete');
+  debugMessage('Scan complete');
 });
 
 zwave.on('node added', function (nodeid) {
-  client.publish('zwave/message', 'Adding node: ' + nodeid + '...\n');
+  debugMessage('Adding node: ' + nodeid + '...\n');
   nodes[nodeid] = {
     classes: {},
     ready: false
@@ -38,11 +45,12 @@ zwave.on('node added', function (nodeid) {
 });
 
 zwave.on('value added', function (nodeid, comclass, value) {
-  value = tools.convertSI(value);
-
+  var message;
   var time = new Date().toISOString();
 
-  var message = {
+  value = tools.convertSI(value);
+
+  message = {
     info: 'value added',
     node: value.node_id,
     label: value.label,
@@ -58,11 +66,12 @@ zwave.on('value added', function (nodeid, comclass, value) {
 });
 
 zwave.on('value changed', function (nodeid, comclass, value) {
-  value = tools.convertSI(value);
-
+  var message;
   var time = new Date().toISOString();
 
-  var message = {
+  value = tools.convertSI(value);
+
+  message = {
     info: 'value changed',
     node: value.node_id,
     label: value.label,
@@ -75,35 +84,31 @@ zwave.on('value changed', function (nodeid, comclass, value) {
 });
 
 zwave.on('node ready', function (nodeid, nodeinfo) {
+  var values;
+
   nodes[nodeid].info = nodeinfo;
   nodes[nodeid]['ready'] = true;
-  console.log('node%d: %s, %s', nodeid,
-  nodeinfo.manufacturer ? nodeinfo.manufacturer
-  : 'id=' + nodeinfo.manufacturerid,
-  nodeinfo.product ? nodeinfo.product
-  : 'product=' + nodeinfo.productid +
-  ', type=' + nodeinfo.producttype);
-  console.log('node%d: name="%s", type="%s", location="%s"', nodeid,
-  nodeinfo.name,
-  nodeinfo.type,
-  nodeinfo.loc);
-  for (var comclass in nodes[nodeid]['classes']) {
+
+  console.log('node' + nodeid + ': ' + nodeinfo.manufacturer + ' ' + nodeinfo.product);
+
+  for (let comclass in nodes[nodeid]['classes']) {
     switch (comclass) {
       case 0x25: // COMMAND_CLASS_SWITCH_BINARY
       case 0x26: // COMMAND_CLASS_SWITCH_MULTILEVEL
         zwave.enablePoll(nodeid, comclass);
         break;
     }
-    var values = nodes[nodeid]['classes'][comclass];
+    values = nodes[nodeid]['classes'][comclass];
     console.log('node%d: class %d', nodeid, comclass);
-    for (var idx in values) {
-      console.log('node%d:   %s=%s', nodeid, values[idx]['label'], values[idx]['value']);
+    for (let idx in values) {
+      console.log('node' + nodeid + ': ' + values[idx].label + '=' + values[idx].value);
     }
   }
 });
 
-console.log('connecting...');
-zwave.connect(config.usbport);
+client.on('message', function (topic, message) {
+  console.log(message.toString());
+});
 
 process.on('SIGINT', function () {
   console.log('disconnecting...');
@@ -117,6 +122,5 @@ client.on('connect', function () {
   // client.publish('presence', 'Hello mqtt');
 });
 
-client.on('message', function (topic, message) {
-  console.log(message.toString());
-});
+console.log('connecting...');
+zwave.connect(config.usbport);
