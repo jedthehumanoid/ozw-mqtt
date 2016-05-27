@@ -1,14 +1,13 @@
 var mqtt = require('mqtt');
-var client = mqtt.connect('mqtt://localhost');
 var topicMatch = require('./tools').topicMatch;
-client.request = require('./tools').request;
 var tools = require('./tools');
-
+var client = mqtt.connect('mqtt://localhost');
 var config = tools.readConfiguration('config.json');
+var onReply = require('./tools').onReply;
+
+client.request = require('./tools').request;
 
 console.log(config);
-
-var onReply = require('./tools').onReply;
 
 client.on('connect', function (topic, message) {
   client.request('server', 'pang', function (message) {
