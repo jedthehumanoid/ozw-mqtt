@@ -108,7 +108,17 @@ zwave.on('node ready', function (nodeid, nodeinfo) {
 
 client.on('message', function (topic, message) {
   console.log(message.toString());
+  if (tools.topicMatch(topic, 'server/request/#')) {
+    handleRequest(topic, message);
+  }
 });
+
+function handleRequest (topic, message) {
+  console.log('Got request');
+  console.log(message.toString());
+  topic = topic.split('/').slice(2).join('/');
+  client.publish('server/response/' + topic, message + ' - pong');
+}
 
 process.on('SIGINT', function () {
   console.log('disconnecting...');
@@ -118,9 +128,16 @@ process.on('SIGINT', function () {
 });
 
 client.on('connect', function () {
-  // client.subscribe('presence');
+  client.subscribe('server/request/#');
   // client.publish('presence', 'Hello mqtt');
 });
+
+function getNodeNeighbors (nodeid) {
+  var neighbors;
+
+  neighbors = zwave.getNodeNeighbors(nodeid);
+  return neighbors;
+}
 
 console.log('connecting...');
 zwave.connect(config.usbport);
