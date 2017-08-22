@@ -4,7 +4,7 @@ var mqtt = require('mqtt');
 var client = mqtt.connect('mqtt://localhost');
 var tools = require('./tools');
 var https = require('https');
-var apikey = 'I4EXCOV9VGR5OLF3';
+var apikey = process.env.ts_apikey
 
 client.on('connect', function () {
   client.subscribe('+/message');
